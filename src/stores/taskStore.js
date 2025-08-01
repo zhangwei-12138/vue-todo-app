@@ -8,6 +8,8 @@ export const useTaskStore = defineStore('taskStore',()=>{
       { id: 2, title: "📝 写报告", done: true },
     ])
 
+
+
     const currentPage = ref(1);
     const pageSize = 3;
 
@@ -70,11 +72,21 @@ export const useTaskStore = defineStore('taskStore',()=>{
     });
 
     function checkPage(){
-        if(currentPage.value > maxPagevalue.value){
-            currentPage.value = maxPage.value
+        if(currentPage.value > maxPage.value){
+            currentPage.value++
         }
     }
 
+    function prevPage(){
+        if(currentPage.value > 1){
+            currentPage.value--
+        }
+    }
+    function nextPage(){
+        if(currentPage.value < maxPage.value){
+            currentPage.value++
+        }
+    }
     return{
         toggleDone,
         deleteTask,
@@ -91,7 +103,10 @@ export const useTaskStore = defineStore('taskStore',()=>{
         keyword,
         sortBy,
         filter,
-        currentPage
+        currentPage,
+
+        prevPage,
+        nextPage
     }
 
 })

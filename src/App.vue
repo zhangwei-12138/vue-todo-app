@@ -2,38 +2,45 @@
   <div>
     <input
       v-model="userTitle"
-      @keyup.enter="addTask"
+      @keyup.enter="store.addTask"
       placeholder="输入任务名称，回车添加"
       ref="inputRef"
     />
-    <button @click="addTask">添加任务</button>
+    <button @click="store.addTask">添加任务</button>
 
     <div style="margin: 10px 0;">
-      <button @click="store.filter = 'all'" :class="{active: filter === 'all'}">全部</button>
-      <button @click="store.filter = 'done'" :class="{active: filter === 'done'}">已完成</button>
-      <button @click="store.filter = 'todo'" :class="{active: filter === 'todo'}">未完成</button>
+      <button @click="store.filter = 'all'" :class="{active: store.filter === 'all'}">全部</button>
+      <button @click="store.filter = 'done'" :class="{active: store.filter === 'done'}">已完成</button>
+      <button @click="store.filter = 'todo'" :class="{active: store.filter === 'todo'}">未完成</button>
     </div>
 
     <div style="margin: 10px 0;">
-      <button @click="store.sortBy = 'created'" :class="{active: sortBy === 'created'}">按创建时间排序</button>
-      <button @click="store.sortBy = 'name'" :class="{active: sortBy === 'name'}">按名称排序</button>
-      <button @click="store.sortBy = 'done'" :class="{active: sortBy === 'done'}">按完成状态排序</button>
+      <button @click="store.sortBy = 'created'" :class="{active: store.sortBy === 'created'}">按创建时间排序</button>
+      <button @click="store.sortBy = 'name'" :class="{active: store.sortBy === 'name'}">按名称排序</button>
+      <button @click="store.sortBy = 'done'" :class="{active: store.sortBy === 'done'}">按完成状态排序</button>
     </div>
 
-    <div v-for="(task,index) in store.pagedTasks" :key="task.id" style="margin-bottom: 6px;">
-      <Comp
-        :task="task"
-        :ref="setTaskRef(task.id)"
-        @delete="deleteDo"
-        @change="changeDo"
-        @updateTitles="updateTitles"
-      />
-    </div>
+    <draggable 
+    v-model="store.tasks"
+    item-key="id"
+    handle=".drag-handle"
+    :move="onMove"
+    :animation="200" >
+      <template #item="{ element : task}">
+        <Comp
+          :task="task"
+          :ref="setTaskRef(task.id)"
+          @delete="deleteDo"
+          @change="changeDo"
+          @updateTitles="updateTitles"
+        />
+      </template>
+    </draggable>
 
     <div style="margin-top: 10px;">
-      <button @click="store.currentPage--" :disabled="store.currentPage === 1">上一页</button>
+      <button @click="store.prevPage" :disabled="store.currentPage === 1">上一页</button>
       <span>{{ store.currentPage }} / {{ store.maxPage }} 页</span>
-      <button @click="store.currentPage++" :disabled="store.currentPage === store.maxPage">下一页</button>
+      <button @click="store.nextPage" :disabled="store.currentPage === store.maxPage">下一页</button>
     </div>
 
     <div style="margin-top: 10px;">
@@ -53,6 +60,7 @@
 import { ref, computed, onMounted, watch, nextTick } from "vue";
 import Comp from "./Comp.vue";
 import { useTaskStore } from './stores/taskStore.js'
+import draggable from 'vuedraggable'
 
 const store = useTaskStore()
 
@@ -63,6 +71,11 @@ const userTitle = ref("");
 const inputRef = ref(null);
 
 const compRefs = ref({})
+
+function onMove(evt) {
+  return true;
+}
+
 
 function setTaskRef(id) {
   return (el)=>{
